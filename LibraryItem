@@ -1,0 +1,93 @@
+import java.time.LocalDate;
+import java.util.*;
+
+interface LibraryItem {
+    LocalDate calculateDueDate(LocalDate currentDate);
+    String getTitle();
+}
+
+class Book implements LibraryItem {
+    private String title;
+
+    Book(String title) {
+        this.title = title;
+    }
+
+    public LocalDate calculateDueDate(LocalDate currentDate) {
+        return currentDate.plusDays(14);
+    }
+
+    public String getTitle() {
+        return title;
+    }
+}
+
+class DVD implements LibraryItem {
+    private String title;
+
+    DVD(String title) {
+        this.title = title;
+    }
+
+    public LocalDate calculateDueDate(LocalDate currentDate) {
+        return currentDate.plusDays(7);
+    }
+
+    public String getTitle() {
+        return title;
+    }
+}
+
+class Magazine implements LibraryItem {
+    private String title;
+
+    Magazine(String title) {
+        this.title = title;
+    }
+
+    public LocalDate calculateDueDate(LocalDate currentDate) {
+        return currentDate.plusDays(3);
+    }
+
+    public String getTitle() {
+        return title;
+    }
+}
+
+public class LibrarySystem {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        Map<String, java.util.function.Function<String, LibraryItem>> factory = new HashMap<>();
+
+        factory.put("BOOK", Book::new);
+        factory.put("DVD", DVD::new);
+        factory.put("MAGAZINE", Magazine::new);
+
+        LocalDate currentDate = LocalDate.of(2023, 10, 26);
+
+        int n = sc.nextInt();
+        sc.nextLine();
+
+        for (int i = 0; i < n; i++) {
+            String line = sc.nextLine();
+
+            String[] parts = line.split(" ", 2);
+            String type = parts[0];
+            String title = parts[1];
+
+            if (title.startsWith("\"") && title.endsWith("\"")) {
+                title = title.substring(1, title.length() - 1);
+            }
+
+            LibraryItem item = factory.get(type).apply(title);
+
+            System.out.println(
+                item.getTitle() + ": " +
+                item.calculateDueDate(currentDate)
+            );
+        }
+
+        sc.close();
+    }
+}
