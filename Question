@@ -1,0 +1,171 @@
+import java.util.*;
+
+interface Question {
+    double evaluate();
+    String getType();
+}
+
+class MCQ implements Question {
+    private String correctAnswer;
+    private String studentAnswer;
+    private double points;
+
+    MCQ(String correctAnswer, String studentAnswer, double points) {
+        this.correctAnswer = correctAnswer;
+        this.studentAnswer = studentAnswer;
+        this.points = points;
+    }
+
+    public double evaluate() {
+        return correctAnswer.equalsIgnoreCase(studentAnswer)
+                ? points : 0;
+    }
+
+    public String getType() {
+        return "MCQ";
+    }
+}
+
+class TrueFalse implements Question {
+    private String correctAnswer;
+    private String studentAnswer;
+    private double points;
+
+    TrueFalse(String correctAnswer, String studentAnswer, double points) {
+        this.correctAnswer = correctAnswer;
+        this.studentAnswer = studentAnswer;
+        this.points = points;
+    }
+
+    public double evaluate() {
+        return correctAnswer.equalsIgnoreCase(studentAnswer)
+                ? points : 0;
+    }
+
+    public String getType() {
+        return "TF";
+    }
+}
+
+class Essay implements Question {
+    private String correctAnswer;
+    private String studentAnswer;
+    private double points;
+
+    Essay(String correctAnswer, String studentAnswer, double points) {
+        this.correctAnswer = correctAnswer;
+        this.studentAnswer = studentAnswer;
+        this.points = points;
+    }
+
+    public double evaluate() {
+        String[] keywords = correctAnswer.split(",");
+        String answer = studentAnswer.toLowerCase();
+
+        int count = 0;
+
+        for (String keyword : keywords) {
+            if (answer.contains(keyword.trim().toLowerCase())) {
+                count++;
+            }
+        }
+
+        if (count >= 2) {
+            return points * 0.75;
+        } else if (count == 1) {
+            return points * 0.50;
+        }
+
+        return 0;
+    }
+
+    public String getType() {
+        return "ESSAY";
+    }
+}
+
+public class ExaminationSystem {
+
+    static String removeQuotes(String text) {
+        if (text.startsWith("\"") && text.endsWith("\"")) {
+            return text.substring(1, text.length() - 1);
+        }
+        return text;
+    }
+
+    static String[] parseLine(String line) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean insideQuotes = false;
+
+        for (char ch : line.toCharArray()) {
+            if (ch == '"') {
+                insideQuotes = !insideQuotes;
+            } else if (ch == ' ' && !insideQuotes) {
+                if (current.length() > 0) {
+                    parts.add(current.toString());
+                    current.setLength(0);
+                }
+            } else {
+                current.append(ch);
+            }
+        }
+
+        if (current.length() > 0) {
+            parts.add(current.toString());
+        }
+
+        return parts.toArray(new String[0]);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        int n = sc.nextInt();
+        sc.nextLine();
+
+        double total = 0;
+
+        for (int i = 0; i < n; i++) {
+            String line = sc.nextLine();
+
+            String[] parts = parseLine(line);
+
+            String type = parts[0];
+            String correctAnswer = parts[2];
+            String studentAnswer = parts[3];
+            double points = Double.parseDouble(parts[4]);
+
+            Question question;
+
+            if (type.equals("MCQ")) {
+                question = new MCQ(
+                    correctAnswer,
+                    studentAnswer,
+                    points
+                );
+            } else if (type.equals("TF")) {
+                question = new TrueFalse(
+                    correctAnswer,
+                    studentAnswer,
+                    points
+                );
+            } else {
+                question = new Essay(
+                    correctAnswer,
+                    studentAnswer,
+                    points
+                );
+            }
+
+            double score = question.evaluate();
+
+            System.out.printf("%s: %.2f%n", type, score);
+            total += score;
+        }
+
+        System.out.printf("Total Score: %.2f%n", total);
+
+        sc.close();
+    }
+}
